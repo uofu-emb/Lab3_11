@@ -22,6 +22,7 @@ void side_thread(void *params)
 {
 	while (1) {
         vTaskDelay(100);
+        //update the counter using code 1 for side thread
         updateCounter(1,&counter,semaphore);
 	}
 }
@@ -29,8 +30,10 @@ void side_thread(void *params)
 void main_thread(void *params)
 {
 	while (1) {
+        //instantiate LED
         cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, on);
         vTaskDelay(100);
+        //update the counter using code 0 for main thread
 		updateCounter(0,&counter,semaphore);
         on = !on;
 	}
