@@ -64,9 +64,10 @@ void testDeadlock(){
     //create Task handle
 
     TaskHandle_t a_handle, b_handle;
-
+    printf("\n threads about to be created");
     xTaskCreate(deadlock,"a",A_TASK_STACK_SIZE,&a_args,A_TASK_PRIORITY,&a_handle);
     xTaskCreate(deadlock,"b",B_TASK_STACK_SIZE,&b_args,B_TASK_PRIORITY,&b_handle);
+    printf("\n threads created");
 
     //create  a delay to make sure deadlock occurs
     vTaskDelay(1000);
@@ -88,7 +89,7 @@ int main (void)
     UNITY_BEGIN();
     RUN_TEST(test_updateCounter_runs);
     RUN_TEST(test_updateCounter_blocks);
-    //RUN_TEST(testDeadlock);
+    RUN_TEST(testDeadlock);
     sleep_ms(5000);
     return UNITY_END();
 }
