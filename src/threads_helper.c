@@ -24,3 +24,27 @@ int updateCounter(int thread, int *counter, SemaphoreHandle_t semaphore){
         return pdTRUE;
     
 }   
+
+/**
+ * This method attempts to create a deadlock situation
+ */
+void deadlock (void *args){
+
+    //get the deadLock args
+    struct DeadlockArgs *dargs = (struct DeadlockArgs *)args;
+    printf("\n Starting Deadlock %c", dargs->source);
+    //take the first semaphore
+    xSemaphoreTake(dargs->a,portMAX_DELAY);
+    printf("\n inside first semaphore source %c",dargs->source);
+    dargs->counter++;
+    //create a delay that should cause deadlock
+    vTaskDelay(100);
+    //take the second lock it should deadlock here
+    xSemaphoreTake(dargs->b, portMAX_DELAY);
+    printf("\n inside the second semaphore source %c",dargs->source);
+    dargs->counter++;
+    //release the semaphores
+    xSemaphoreGive(dargs->a);
+    xSemaphoreGive(dargs->b);
+
+}
