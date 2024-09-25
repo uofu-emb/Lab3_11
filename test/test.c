@@ -5,7 +5,8 @@
 #include "unity_config.h"
 #include "threads_helper.h"
 
-
+// In FreeRTOS bigger is higher priority, with 0 being the lowest.
+#define TEST_RUNNER_PRIORITY ( tskIDLE_PRIORITY + 5UL )
 void setUp(void) {}
 
 void tearDown(void) {}
@@ -70,26 +71,39 @@ void testDeadlock(){
     printf("\n threads created");
 
     //create  a delay to make sure deadlock occurs
-    vTaskDelay(1000);
+    vTaskDelay(100);
 
-    TEST_ASSERT_EQUAL_INT16_MESSAGE(a_args.counter,1,"The a thread counter is more or less than 1. Deadlock failed");
-    TEST_ASSERT_EQUAL_INT16_MESSAGE(b_args.counter,11,"The b thread counter is more or less than 1. Deadlock failed");
+    TEST_ASSERT_EQUAL_INT16_MESSAGE(a_args.counter,1,"\nThe a thread counter is more or less than 1. Deadlock failed");
+    TEST_ASSERT_EQUAL_INT16_MESSAGE(b_args.counter,11,"\nThe b thread counter is more or less than 1. Deadlock failed");
+    TEST_ASSERT_EQUAL_INT(uxSemaphoreGetCount(semaphore1), 0);
+    TEST_ASSERT_EQUAL_INT(uxSemaphoreGetCount(semaphore2), 0);
+
+
 
     vTaskDelete(a_handle);
     vTaskDelete(b_handle);
 
 }
 
+void runner_thread(__unused void *args)
+{
+    for (;;) {
+        printf("Start tests\n");
+        UNITY_BEGIN();
+        RUN_TEST(test_updateCounter_runs);
+        RUN_TEST(test_updateCounter_blocks);
+        RUN_TEST(testDeadlock);
+        UNITY_END();
+        sleep_ms(10000);
+    }
+}
 
 int main (void)
 {
     stdio_init_all();
-    sleep_ms(20000); // Give time for TTY to attach.
-    printf("Start tests\n");
-    UNITY_BEGIN();
-    RUN_TEST(test_updateCounter_runs);
-    RUN_TEST(test_updateCounter_blocks);
-    RUN_TEST(testDeadlock);
-    sleep_ms(5000);
-    return UNITY_END();
+    hard_assert(cyw43_arch_init() == PICO_OK);
+    xTaskCreate(runner_thread, "TestRunner",
+                configMINIMAL_STACK_SIZE, NULL, TEST_RUNNER_PRIORITY, NULL);
+    vTaskStartScheduler();
+	return 0;
 }
