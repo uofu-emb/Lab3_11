@@ -11,6 +11,8 @@ int updateCounter(int thread, int *counter, SemaphoreHandle_t semaphore);
 
 void deadlock(void *args);
 
+int orphaned_lock(SemaphoreHandle_t semaphore, int *counter);
+
 struct DeadlockArgs {
     SemaphoreHandle_t a;
     SemaphoreHandle_t b;

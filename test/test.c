@@ -85,6 +85,39 @@ void testDeadlock(){
 
 }
 
+void test_orphaned_method(){
+    int counter = 0;
+    SemaphoreHandle_t semaphore = xSemaphoreCreateCounting(1,1);
+
+
+    int result = orphaned_lock(semaphore, &counter);
+    TEST_ASSERT_EQUAL_INT(1, counter);
+    TEST_ASSERT_EQUAL_INT(pdFALSE, result);
+    TEST_ASSERT_EQUAL_INT(0, uxSemaphoreGetCount(semaphore));
+
+    result = orphaned_lock(semaphore,&counter);
+    TEST_ASSERT_EQUAL_INT(1, counter);
+    TEST_ASSERT_EQUAL_INT(pdFALSE, result);
+    TEST_ASSERT_EQUAL_INT(0, uxSemaphoreGetCount(semaphore));
+
+    xSemaphoreGive(semaphore);
+
+    result = orphaned_lock(semaphore,&counter);
+    TEST_ASSERT_EQUAL_INT(2, counter);
+    TEST_ASSERT_EQUAL_INT(pdTRUE, result);
+    TEST_ASSERT_EQUAL_INT(1, uxSemaphoreGetCount(semaphore));
+
+    result = orphaned_lock(semaphore,&counter);
+    TEST_ASSERT_EQUAL_INT(3, counter);
+    TEST_ASSERT_EQUAL_INT(pdFALSE, result);
+    TEST_ASSERT_EQUAL_INT(0, uxSemaphoreGetCount(semaphore));
+
+    result = orphaned_lock(semaphore,&counter);
+    TEST_ASSERT_EQUAL_INT(3, counter);
+    TEST_ASSERT_EQUAL_INT(pdFALSE, result);
+    TEST_ASSERT_EQUAL_INT(0, uxSemaphoreGetCount(semaphore));
+}
+
 void runner_thread(__unused void *args)
 {
     for (;;) {
@@ -92,7 +125,9 @@ void runner_thread(__unused void *args)
         UNITY_BEGIN();
         RUN_TEST(test_updateCounter_runs);
         RUN_TEST(test_updateCounter_blocks);
+        RUN_TEST(test_orphaned_method);
         RUN_TEST(testDeadlock);
+
         UNITY_END();
         sleep_ms(10000);
     }
@@ -102,6 +137,8 @@ int main (void)
 {
     stdio_init_all();
     hard_assert(cyw43_arch_init() == PICO_OK);
+
+    //create runer thread to run the tests in and start the vTaskStartSchecular to that threads run.
     xTaskCreate(runner_thread, "TestRunner",
                 configMINIMAL_STACK_SIZE, NULL, TEST_RUNNER_PRIORITY, NULL);
     vTaskStartScheduler();
