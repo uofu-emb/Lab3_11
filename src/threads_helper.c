@@ -46,5 +46,6 @@ void deadlock (void *args){
     //release the semaphores
     xSemaphoreGive(dargs->a);
     xSemaphoreGive(dargs->b);
+    vTaskSuspend(NULL);
 
 }

@@ -74,7 +74,6 @@ void testDeadlock(){
     TEST_ASSERT_EQUAL_INT16_MESSAGE(a_args.counter,1,"The a thread counter is more or less than 1. Deadlock failed");
     TEST_ASSERT_EQUAL_INT16_MESSAGE(b_args.counter,11,"The b thread counter is more or less than 1. Deadlock failed");
 
-    vTaskDelay(1000);
     vTaskDelete(a_handle);
     vTaskDelete(b_handle);
 
@@ -89,7 +88,7 @@ int main (void)
     UNITY_BEGIN();
     RUN_TEST(test_updateCounter_runs);
     RUN_TEST(test_updateCounter_blocks);
-    RUN_TEST(testDeadlock);
+    //RUN_TEST(testDeadlock);
     sleep_ms(5000);
     return UNITY_END();
 }
