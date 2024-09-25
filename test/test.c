@@ -118,6 +118,27 @@ void test_orphaned_method(){
     TEST_ASSERT_EQUAL_INT(0, uxSemaphoreGetCount(semaphore));
 }
 
+void test_unorphaned_method(){
+    int counter = 0;
+    SemaphoreHandle_t semaphore = xSemaphoreCreateCounting(1,1);
+
+
+    int result = unorphaned_lock(semaphore, &counter);
+    TEST_ASSERT_EQUAL_INT(1, counter);
+    TEST_ASSERT_EQUAL_INT(pdFALSE, result);
+    TEST_ASSERT_EQUAL_INT(1, uxSemaphoreGetCount(semaphore));
+
+    result = unorphaned_lock(semaphore,&counter);
+    TEST_ASSERT_EQUAL_INT(2, counter);
+    TEST_ASSERT_EQUAL_INT(pdTRUE, result);
+    TEST_ASSERT_EQUAL_INT(1, uxSemaphoreGetCount(semaphore));
+
+    result = unorphaned_lock(semaphore,&counter);
+    TEST_ASSERT_EQUAL_INT(3, counter);
+    TEST_ASSERT_EQUAL_INT(pdFALSE, result);
+    TEST_ASSERT_EQUAL_INT(1, uxSemaphoreGetCount(semaphore));
+}
+
 void runner_thread(__unused void *args)
 {
     for (;;) {
@@ -125,8 +146,9 @@ void runner_thread(__unused void *args)
         UNITY_BEGIN();
         RUN_TEST(test_updateCounter_runs);
         RUN_TEST(test_updateCounter_blocks);
-        RUN_TEST(test_orphaned_method);
         RUN_TEST(testDeadlock);
+        RUN_TEST(test_orphaned_method);
+        RUN_TEST(test_unorphaned_method);
 
         UNITY_END();
         sleep_ms(10000);

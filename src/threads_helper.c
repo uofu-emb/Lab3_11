@@ -64,3 +64,23 @@ int orphaned_lock(SemaphoreHandle_t semaphore, int *counter){
         return pdTRUE;
     
 }
+/**
+ * Fixed it so that functionality is the same but the semaphore always is given back.
+ */
+int unorphaned_lock(SemaphoreHandle_t semaphore, int *counter){
+
+        if(xSemaphoreTake(semaphore, 500) == pdFALSE){
+            return pdFALSE;
+        }
+        (*counter)++;
+        if (*counter % 2) {
+            xSemaphoreGive(semaphore);
+            return pdFALSE;
+        }
+        else{
+            printf("Count %d\n", counter);
+            xSemaphoreGive(semaphore);
+            return pdTRUE;
+        }
+    
+}
